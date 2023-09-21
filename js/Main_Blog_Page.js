@@ -261,6 +261,9 @@ $(document).ready(function () {
     $('.next-prev-wrap').on('click', function () {
         blog_id = $(this).attr("id")
         main_blog_function()
+        setTimeout(() => {
+            $(window).scrollTop(0);
+        }, 100);
     })
 
     height = (Object.keys(distinctValues).length / 2)

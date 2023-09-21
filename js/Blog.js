@@ -137,6 +137,7 @@ $(document).ready(function () {
     $('.Blog_ID').on('click', function () {
         Blog_ID = parseFloat($(this).attr('id'))
         sessionStorage.setItem("Blog_ID", Blog_ID);
+        window.location.href = "mainBlogPage.html"
     });
 
     setTimeout(() => {

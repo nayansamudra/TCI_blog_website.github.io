@@ -745,3 +745,20 @@ User Reiew
     position: relative !important;
   }
 }
+
+.post-body figure img {
+  border-radius: 8px !important;
+}
+
+
+@media (max-width:768px) {
+  .post-body figure,
+  .post-body img {
+    width: auto !important;
+  }
+
+  #Previous_article_heading,
+  #Next_article_heading {
+    font-size: 14px !important;
+  }
+}
