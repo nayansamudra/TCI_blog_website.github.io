@@ -583,6 +583,37 @@ shorten = (text, length = 75) => {
 
 
 
+//----------- Function to delete Cookie 
+function deleteCookie(cookieName) {
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
+
+
+//------------ Function to clear all cookies
+function clearAllCookies() {
+    const cookies = document.cookie.split(';');
+
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim().split('=');
+        if (cookie[0] !== '') {
+            console.log(cookie[0])
+            deleteCookie(cookie[0]);
+        }
+    }
+
+    window.location.href = "/admin"
+}
+
+
+
+//---------- Log Out
+td_logout = () => {
+    clearAllCookies();
+}
+
+
+
 //---------- Sign Out 
 function signOut() {
     google.accounts.id.disableAutoSelect()
@@ -591,38 +622,50 @@ function signOut() {
 
 
 //---------- Log Out
-td_logout = () => {
-    signOut()
-    localStorage.clear();
-    var pastDate = new Date(0);
-    document.cookie = "td_token=; expires=" + pastDate.toUTCString() + "; path=/";
-    
-    window.location.href = "/admin"
-}
+// td_logout = () => {
+//     signOut()
+//     localStorage.clear();
+//     var pastDate = new Date(0);
+//     document.cookie = "td_token=; expires=" + pastDate.toUTCString() + "; path=/";
+
+//     window.location.href = "/admin"
+// }
 
 
 
 //---------- Show_Hide Table
 show_hide_3 = () => {
     counter_for_show_hide_3 += 1;
-    if(counter_for_show_hide_3 % 2 == 0){
+    if (counter_for_show_hide_3 % 2 == 0) {
         $('.wrapper_1_button_3').text('Hide')
         $('#table_datatable_3').show()
     }
-    else{
+    else {
         $('.wrapper_1_button_3').text('Show')
         $('#table_datatable_3').hide()
     }
 }
 
 
+//---------- check cookie exist or not
+function cookieExists(cookieName) {
+    return document.cookie.split(';').some((cookie) => cookie.trim().startsWith(cookieName + '='));
+}
+
+
 //---------- On Ready - Refresh
 $(document).ready(function () {
+
+    if (!cookieExists("td_token")) {
+        window.location.href = "/admin";
+        return
+    }
+
     $.ajaxSetup({ async: false }); // to stop async
 
     $("#Main_Heading_input").focus();
-    root = "https://tradingduniya.com";
-    main_route = "/blogs";
+    root = "https://blog.tradingcafeindia.com";
+    main_route = "/api/blogs";
 
     $("#update").hide();
     $("#submit").show();
@@ -657,12 +700,22 @@ $(document).ready(function () {
 
     Fetch_All_Blog();
 
+    storedArray = JSON.parse(localStorage.getItem('added_dropdown'));
+    if (storedArray === null) {
+        added_dropdown = []
+    } else {
+        for (var i = 0; i < storedArray.length; i++) {
+            $("#myDropdown").append("<option value='" + storedArray[i] + "'>" + storedArray[i] + "</option>");
+        }
+    }
+
     $("#addOptionButton").on("click", function () {
         var newOptionValue = prompt("Enter a value for the new option:");
-        var newOptionText = prompt("Enter a display text for the new option:");
-        $("#myDropdown").append(
-            "<option value='" + newOptionValue + "'>" + newOptionText + "</option>"
-        );
+        if (newOptionValue !== null && newOptionValue.trim() !== "") {
+            $("#myDropdown").append("<option value='" + newOptionValue + "'>" + newOptionValue + "</option>");
+            added_dropdown.push(newOptionValue);
+            localStorage.setItem('added_dropdown', JSON.stringify(added_dropdown));
+        }
     });
 
     $("#BlogDatatable tbody").on("click", "td", function () {
@@ -689,8 +742,7 @@ $(document).ready(function () {
         td_logout()
     })
 
-
-    $('#myDropdown').on('change',()=>{
+    $('#myDropdown').on('change', () => {
         $('#Category_input').val($("#myDropdown option:selected").text())
     })
 });

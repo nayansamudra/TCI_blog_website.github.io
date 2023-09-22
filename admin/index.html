@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TCI Blog Admin - Login</title>
+
+
+    <!-- Google Login -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://unpkg.com/jwt-decode/build/jwt-decode.js"></script>
+
+    <script>
+        //---------- Sign In
+        function onSignIn(response) {
+
+            const responsePayload = jwt_decode(response.credential);
+
+            var email = responsePayload.email
+
+            cred = response.credential
+
+            $.post("https://blog.tradingcafeindia.com/api/blogs/auth", { g_token: cred }, function (data, status) {
+                console.log("Data: " + data + "\nStatus: " + status);
+                if (data == "success") {
+                    console.log("Auth Success")
+                    
+                    window.location.href = "/admin/blog_backend"
+                }
+                else {
+                    console.log("ERROR")
+                }
+            });
+        }
+    </script>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            font-size: 11em;
+            font-weight: bold;
+            font-family: sans-serif;
+            background-color: rgb(243, 243, 243);
+        }
+
+        .form-items {
+            padding: 35px 30px;
+            border-radius: 10px;
+            background-color: #fff;
+            -webkit-box-shadow: 0 6px 15px rgba(0, 0, 0, 0.16);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.16);
+            display: inline-block;
+            width: 100%;
+            max-width: 330px;
+            text-align: left;
+            -webkit-transition: all 0.4s ease;
+            transition: all 0.4s ease;
+        }
+
+        h3 {
+            color: #000;
+            text-align: left;
+            font-size: 30px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            margin-top: 0px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="form-items">
+        <h3>Welcome</h3>
+        <form>
+            <div class="form-button">
+                <div id="g_id_onload"
+                    data-client_id="256759331803-av7b02quitmapk0sb3k54t575n72pn9d.apps.googleusercontent.com"
+                    data-callback="onSignIn"></div>
+                <div class="g_id_signin" data-type="standard"></div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Jquery CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js"
+        integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+</body>
+
+</html>

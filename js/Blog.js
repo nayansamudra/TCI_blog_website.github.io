@@ -25,7 +25,7 @@ fetch_blog_list = () => {
                 <img src="${Object.values(distinctValues_1)[i][3]}" alt="cat-slider" width="696" height="491">
                 <div class="item-content">
                     <h4 class="title">
-                        <a href="blog.html" class="category">${Object.keys(distinctValues_1)[i]}</a>
+                        <a href="index.html" class="category">${Object.keys(distinctValues_1)[i]}</a>
                     </h4>
                     <p class="count">
                         <span class="anim-overflow"> (${Object.values(distinctValues)[i]}) </span>
@@ -69,14 +69,14 @@ displayBlogs = () => {
             style="visibility: visible; animation-duration: 800ms; animation-delay: 100ms; animation-name: fadeInUp;">
                 <div class="rt-post-overlay rt-post-overlay-md layout-6 Blog_ID" id="${distinctData[i][0]}">
                     <div class="post-img">
-                        <a href="mainBlogPage.html" class="img-link">
+                        <a href="read.html" class="img-link">
                             <img src="${distinctData[i][3]}" alt="post-xl_37" width="900" height="600">
                         </a>
                     </div>
                     <div class="post-content">
-                        <a href="blog.html" class="life-style">${distinctData[i][2]}</a>
+                        <a href="index.html" class="life-style">${distinctData[i][2]}</a>
                         <h3 class="post-title">
-                            <a href="mainBlogPage.html">${distinctData[i][1]}</a>
+                            <a href="read.html">${distinctData[i][1]}</a>
                         </h3>
                         <div class="post-meta">
                             <ul>
@@ -110,8 +110,8 @@ $(document).ready(function () {
     counter_for_each_category = 0
     Final_All_Category = []
 
-    root = "https://tradingduniya.com";
-    main_route = "/blogs";
+    root = "https://blog.tradingcafeindia.com";
+    main_route = "/api/blogs";
 
     $.post(root + main_route + '/fetch_blog_list', { catg: 'all' }, function (data, status) {
         console.log("Status: " + status);
@@ -122,23 +122,6 @@ $(document).ready(function () {
             fetch_blog_list()
         }
     })
-
-
-    $('.category').on('click', function () {
-        clicked_category = $(this).text()
-        sessionStorage.setItem("clicked_category", clicked_category);
-    });
-
-    $('.life-style').on('click', function () {
-        clicked_category = $(this).text()
-        sessionStorage.setItem("clicked_category", clicked_category);
-    });
-
-    $('.Blog_ID').on('click', function () {
-        Blog_ID = parseFloat($(this).attr('id'))
-        sessionStorage.setItem("Blog_ID", Blog_ID);
-        window.location.href = "mainBlogPage.html"
-    });
 
     setTimeout(() => {
         if (sessionStorage.getItem("clicked_tag") != null) {
@@ -181,3 +164,19 @@ $(document).ready(function () {
         }, 2000);
     });
 })
+
+$(document).on('click', '.category', function () {
+    clicked_category = $(this).text()
+    sessionStorage.setItem("clicked_category", clicked_category);
+});
+
+$(document).on('click', '.life-style', function () {
+    clicked_category = $(this).text()
+    sessionStorage.setItem("clicked_category", clicked_category);
+});
+
+$(document).on("click", ".Blog_ID", function () {
+    Blog_ID = parseFloat($(this).attr('id'))
+    sessionStorage.setItem("Blog_ID", Blog_ID);
+    window.location.href = "read.html"
+});

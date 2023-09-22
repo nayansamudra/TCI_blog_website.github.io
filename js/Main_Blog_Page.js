@@ -6,11 +6,13 @@ fetch_blog_list = () => {
         $('#Latest_Blog_Date_1').text(moment.unix(All_Blog[All_Blog.length - 1][0]).format("MMMM DD, YYYY"))
 
         comapre_category = All_Blog[All_Blog.length - 1][2]
+        list_of_next_three_catgory_blog_dict = {}
         list_of_next_three_catgory_blog = []
-        for (var i = (All_Blog.length - 2); i > 0; i--) {
-            if (All_Blog[i][2] != comapre_category && list_of_next_three_catgory_blog.length < 3) {
+        for (var i = (All_Blog.length - 2); i >= 0; i--) {
+            var value = All_Blog[i][2]
+            if (!(value in list_of_next_three_catgory_blog_dict) && list_of_next_three_catgory_blog.length < 3 && value != comapre_category) {
+                list_of_next_three_catgory_blog_dict[All_Blog[i][2]] = All_Blog[i];
                 list_of_next_three_catgory_blog.push(All_Blog[i])
-                comapre_category = All_Blog[i][2]
             }
         }
     }
@@ -73,7 +75,7 @@ fetch_blog_list = () => {
                 <img src="${Object.values(distinctValues_1)[i][3]}" alt="cat-slider" width="696" height="491">
                 <div class="item-content">
                     <h4 class="title">
-                        <a href="blog.html" class="category">${Object.keys(distinctValues_1)[i]}</a>
+                        <a href="index.html" class="category">${Object.keys(distinctValues_1)[i]}</a>
                     </h4>
                     <p class="count">
                         <span class="anim-overflow"> (${Object.values(distinctValues)[i]}) </span>
@@ -94,12 +96,12 @@ fetch_blog = () => {
     $('.post-body').text('')
     $('.post-body').html(JSON.parse(Blog_data[0][5])['Blog_Description'])
 
-    if('Tags' in JSON.parse(Blog_data[0][5])) {
-        if(JSON.parse(Blog_data[0][5])['Tags'].length == 0) {
+    if ('Tags' in JSON.parse(Blog_data[0][5])) {
+        if (JSON.parse(Blog_data[0][5])['Tags'].length == 0) {
             $('#tags_conent_block').remove()
-        } else if(JSON.parse(Blog_data[0][5])['Tags'].length > 0) {
+        } else if (JSON.parse(Blog_data[0][5])['Tags'].length > 0) {
             for (var i = 0; i < JSON.parse(Blog_data[0][5])['Tags'].length; i++) {
-                $('.tag-list').append(`<a href="blog.html" class="tag-link">${JSON.parse(Blog_data[0][5])['Tags'][i]}</a>`)
+                $('.tag-list').append(`<a href="index.html" class="tag-link">${JSON.parse(Blog_data[0][5])['Tags'][i]}</a>`)
             }
         }
     }
@@ -167,6 +169,80 @@ main_blog_function = () => {
 }
 
 
+updating_url = () => {
+    //-------------updating the URL with Blog ID
+    blog_id = sessionStorage.getItem("Blog_ID");
+    if (blog_id != null) {
+        var currentURL = window.location.href;
+        var base64BlogId = btoa(blog_id);
+        function updateOrAppendQueryParam(url, key, value) {
+            var updatedURL;
+            var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+            var separator = url.indexOf("?") !== -1 ? "&" : "?";
+
+            if (url.match(re)) {
+                updatedURL = url.replace(re, '$1' + key + '=' + value + '$2');
+            } else {
+                updatedURL = url + separator + key + '=' + value;
+            }
+
+            return updatedURL;
+        }
+        var updatedURL = updateOrAppendQueryParam(currentURL, 'key', base64BlogId);
+        history.pushState(null, null, updatedURL);
+    }
+    //--------------Fetching data from URL
+    var currentURL = window.location.href;
+    // Function to extract a query parameter value by its name
+    function getQueryParamAndDecode(url, name) {
+        name = name.replace(/[\[\]]/g, '\\$&');
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+        var results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return atob(results[2].replace(/\+/g, ' '));
+    }
+    // Fetch the blogId from the URL
+    blog_id = getQueryParamAndDecode(currentURL, 'key');
+}
+
+updating_name_in_url = () => {
+    for (var i = 0; i < All_Blog.length; i++) {
+        if (blog_id == All_Blog[i][0]) {
+            key2 = All_Blog[i][1]
+            key2 = key2.replace(/ /g, '-');
+            break;
+        }
+    }
+
+    // Function to check if a query parameter exists in the URL
+    function doesQueryParamExist(url, paramName) {
+        var params = new URLSearchParams(url.search);
+        return params.has(paramName);
+    }
+
+    // Function to replace or add a query parameter in the URL
+    function updateOrAddQueryParam(url, paramName, paramValue) {
+        var params = new URLSearchParams(url.search);
+        params.set(paramName, paramValue);
+        return url.pathname + '?' + params.toString();
+    }
+
+    // Get the current URL
+    var currentURL = new URL(window.location.href);
+
+    // Check if key2 exists in the URL
+    if (doesQueryParamExist(currentURL, 'key2')) {
+        // If key2 exists, replace its value
+        var updatedURL = updateOrAddQueryParam(currentURL, 'key2', key2);
+        history.pushState(null, null, updatedURL);
+    } else {
+        // If key2 doesn't exist, add it
+        currentURL.searchParams.append('key2', key2);
+        history.pushState(null, null, currentURL.toString());
+    }
+}
+
 
 $(document).ready(function () {
 
@@ -175,8 +251,10 @@ $(document).ready(function () {
     counter_for_click = 0
     prev_next_array = []
 
-    root = "https://tradingduniya.com";
-    main_route = "/blogs";
+    root = "https://blog.tradingcafeindia.com";
+    main_route = "/api/blogs";
+
+    updating_url()
 
     $('.sidebarBtn').click(function () {
         $('.rt-slide-nav').toggle()
@@ -196,26 +274,17 @@ $(document).ready(function () {
     })
 
     if (All_Blog.length != 0) {
-        if (sessionStorage.getItem("Blog_ID") != null) {
-            blog_id = sessionStorage.getItem("Blog_ID")
+        if (blog_id === null || blog_id === undefined || blog_id === '') {
+            if (sessionStorage.getItem("Blog_ID") !== null) {
+                blog_id = sessionStorage.getItem("Blog_ID");
+            } else {
+                blog_id = All_Blog[All_Blog.length - 1][0];
+            }
         }
-        else {
-            blog_id = All_Blog[All_Blog.length - 1][0]
-        }
-
+        updating_name_in_url()
         main_blog_function()
     }
 
-
-    $('.category').on('click', function () {
-        clicked_category = $(this).text()
-        sessionStorage.setItem("clicked_category", clicked_category);
-    });
-
-    $('.tag-link').on('click', function () {
-        clicked_tag = $(this).text().trim();
-        sessionStorage.setItem("clicked_tag", clicked_tag);
-    });
 
     if (All_Blog.length != 0) {
         $('.Latest_Blog').on('click', function () {
@@ -258,13 +327,6 @@ $(document).ready(function () {
         });
     }
 
-    $('.next-prev-wrap').on('click', function () {
-        blog_id = $(this).attr("id")
-        main_blog_function()
-        setTimeout(() => {
-            $(window).scrollTop(0);
-        }, 100);
-    })
 
     height = (Object.keys(distinctValues).length / 2)
     if (height > 2) {
@@ -284,43 +346,57 @@ $(document).ready(function () {
         }
     })
 
-    // Share on Facebook
-    $('.fb').on('click', function(e) {
-        e.preventDefault();
-        var blogUrl = encodeURIComponent(window.location.href);
-        var facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + blogUrl;
-        window.open(facebookUrl, '_blank');
-    });
-
-    // Share on Twitter
-    $('.tw').on('click', function(e) {
-        e.preventDefault();
-        var blogUrl = encodeURIComponent(window.location.href);
-        var twitterUrl = 'https://twitter.com/intent/tweet?url=' + blogUrl;
-        window.open(twitterUrl, '_blank');
-    });
-
-    // Share on YouTube
-    $('.yu').on('click', function(e) {
-        e.preventDefault();
-        // Replace 'YOUR_YOUTUBE_URL_HERE' with the actual URL of your YouTube video
-        var youtubeUrl = 'https://www.youtube.com/watch?v=YOUR_YOUTUBE_URL_HERE';
-        window.open(youtubeUrl, '_blank');
-    });
-
-    // Share on LinkedIn
-    $('.li').on('click', function(e) {
-        e.preventDefault();
-        var blogUrl = encodeURIComponent(window.location.href);
-        var linkedinUrl = 'https://www.linkedin.com/shareArticle?mini=true&url=' + blogUrl;
-        window.open(linkedinUrl, '_blank');
-    });
-
-    // Share on WhatsApp
-    $('.wh').on('click', function(e) {
-        e.preventDefault();
-        var blogUrl = encodeURIComponent(window.location.href);
-        var whatsappUrl = 'https://api.whatsapp.com/send?text=' + blogUrl;
-        window.open(whatsappUrl, '_blank');
-    });
 })
+
+$(document).on('click', '.category', function () {
+    clicked_category = $(this).text()
+    sessionStorage.setItem("clicked_category", clicked_category);
+});
+
+$(document).on('click', '.tag-link', function () {
+    clicked_tag = $(this).text().trim();
+    sessionStorage.setItem("clicked_tag", clicked_tag);
+});
+
+$(document).on('click', '.next-prev-wrap', function () {
+    blog_id = $(this).attr("id")
+    sessionStorage.setItem("Blog_ID", blog_id);
+    updating_url()
+    updating_name_in_url()
+    main_blog_function()
+    setTimeout(() => {
+        $(window).scrollTop(0);
+    }, 100);
+})
+
+// Share on Facebook
+$(document).on('click', '.fb', function (e) {
+    e.preventDefault();
+    var blogUrl = encodeURIComponent(window.location.href);
+    var facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + blogUrl;
+    window.open(facebookUrl, '_blank');
+});
+
+// Share on Twitter
+$(document).on('click', '.tw', function (e) {
+    e.preventDefault();
+    var blogUrl = encodeURIComponent(window.location.href);
+    var twitterUrl = 'https://twitter.com/intent/tweet?url=' + blogUrl;
+    window.open(twitterUrl, '_blank');
+});
+
+// Share on LinkedIn
+$(document).on('click', '.li', function (e) {
+    e.preventDefault();
+    var blogUrl = encodeURIComponent(window.location.href);
+    var linkedinUrl = 'https://www.linkedin.com/shareArticle?mini=true&url=' + blogUrl;
+    window.open(linkedinUrl, '_blank');
+});
+
+// Share on WhatsApp
+$(document).on('click', '.wh', function (e) {
+    e.preventDefault();
+    var blogUrl = encodeURIComponent(window.location.href);
+    var whatsappUrl = 'https://api.whatsapp.com/send?text=' + blogUrl;
+    window.open(whatsappUrl, '_blank');
+});
